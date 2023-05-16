@@ -35,4 +35,22 @@ class Comment extends Model
     }
 
 
+    public function getReplyCount($list)
+    {
+        $com=new self();
+        $count=[];
+
+        foreach ($list as $item){
+
+            $num=$com::where("type",3)
+                ->where("parent_id",$item["id"])
+                ->count();
+            
+
+        }
+        return $count;
+
+    }
+
+
 }
