@@ -13,10 +13,6 @@ use think\Model;
 class Like extends Model
 {
 
-    
-
-    
-
     // 表名
     protected $name = 'like';
     

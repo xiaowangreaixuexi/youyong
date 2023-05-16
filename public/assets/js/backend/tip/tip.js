@@ -31,7 +31,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'user_id', title: __('User_id')},
                         {field: 'parent_id', title: __('Parent_id')},
                         {field: 'images', title: __('Images'), operate: false, events: Table.api.events.image, formatter: Table.api.formatter.images},
-                        {field: 'tip_type', title: __('Tip_type')},
+                        {field: 'type', title: __('Type'), searchList : { '1' : __('Type 1'), '2' : __('Type 2'), '3' : __('Type 3') }, formatter: Table.api.formatter.normal},
                         {field: 'solveswitch', title: __('Solveswitch'), table: table, formatter: Table.api.formatter.toggle},
                         {field: 'hiddswitch', title: __('Hiddswitch'), table: table, formatter: Table.api.formatter.toggle},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
@@ -49,6 +49,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
         },
         edit: function () {
             Controller.api.bindevent();
+
         },
         api: {
             bindevent: function () {

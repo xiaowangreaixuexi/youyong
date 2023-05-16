@@ -3,7 +3,7 @@
     <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('User_id')}:</label>
         <div class="col-xs-12 col-sm-8">
-            <input id="c-user_id" class="form-control" name="row[user_id]" type="number">
+            <input id="c-user_id" class="form-control" name="row[user_id]" type="number" value="{$row.user_id|htmlentities}">
         </div>
     </div>
     <div class="form-group">
@@ -33,21 +33,31 @@
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Tip_type')}:</label>
+        <label class="control-label col-xs-12 col-sm-2">{:__('Type')}:</label>
         <div class="col-xs-12 col-sm-8">
-            <input id="c-tip_type" class="form-control" name="row[tip_type]" type="number" value="{$row.tip_type|htmlentities}">
+            <select id="c-type" class="form-control selectpicker" name="row[type]">
+                {foreach name="typeList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.type"}selected{/in} > {$vo} </option>
+                {/foreach}
+            </select>
         </div>
     </div>
     <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Solveswitch')}:</label>
         <div class="col-xs-12 col-sm-8">
-            <input id="c-solveswitch" class="form-control" name="row[solveswitch]" type="number" value="{$row.solveswitch|htmlentities}">
+            <input id="c-solveswitch" class="form-control" name="row[solveswitch]" type="hidden" value="{$row.solveswitch|htmlentities}">
+            <a href="javascript:;" data-toggle="switcher" class="btn-switcher" data-input-id="c-solveswitch" data-yes="1" data-no="0" >
+                <i class="fa fa-toggle-on text-success {eq name="$row.solveswitch" value="0"}fa-flip-horizontal text-gray{/eq} fa-2x"></i>
+            </a>
         </div>
     </div>
     <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Hiddswitch')}:</label>
         <div class="col-xs-12 col-sm-8">
-            <input id="c-hiddswitch" class="form-control" name="row[hiddswitch]" type="number" value="{$row.hiddswitch|htmlentities}">
+            <input id="c-hiddswitch" class="form-control" name="row[hiddswitch]" type="hidden" value="{$row.hiddswitch|htmlentities}">
+            <a href="javascript:;" data-toggle="switcher" class="btn-switcher" data-input-id="c-hiddswitch" data-yes="1" data-no="0" >
+                <i class="fa fa-toggle-on text-success {eq name="$row.hiddswitch" value="0"}fa-flip-horizontal text-gray{/eq} fa-2x"></i>
+            </a>
         </div>
     </div>
     <div class="form-group layer-footer">

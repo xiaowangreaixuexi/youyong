@@ -5,7 +5,7 @@ namespace app\admin\controller\tip;
 use app\common\controller\Backend;
 
 /**
- * 
+ * 举报管理
  *
  * @icon fa fa-circle-o
  */
@@ -22,7 +22,7 @@ class Tip extends Backend
     {
         parent::_initialize();
         $this->model = new \app\common\model\tip\Tip;
-
+        $this->view->assign("typeList",$this->model->getTypeList());
     }
 
 
@@ -57,7 +57,7 @@ class Tip extends Backend
                     ->paginate($limit);
 
             foreach ($list as $row) {
-                $row->visible(['id','user_id','parent_id','content','images','tip_type','solveswitch','hiddswitch','createtime','updatetime']);
+                $row->visible(['id','user_id','parent_id','content','images','type','solveswitch','hiddswitch','createtime','updatetime']);
                 
             }
 
