@@ -4,7 +4,7 @@ namespace app\admin\controller\comment;
 
 use app\common\controller\Backend;
 
-/**
+/**评论Controller控制器
  * 
  *
  * @icon fa fa-comment

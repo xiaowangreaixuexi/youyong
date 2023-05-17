@@ -5,6 +5,9 @@ namespace app\common\model\dynamic;
 use think\Model;
 use traits\model\SoftDelete;
 
+/**动态Model模型
+ * class Dynamic
+ */
 class Dynamic extends Model
 {
 

@@ -5,6 +5,9 @@ namespace app\common\model\information;
 use think\Model;
 
 
+/**资讯Model模型
+ * class Information
+ */
 class Information extends Model
 {
 

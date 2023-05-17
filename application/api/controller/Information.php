@@ -49,9 +49,17 @@ class Information extends Api{
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function getInformationList()
+    public function getInformationList(Request $request)
     {
+        $data=$request->post();
+        if (empty($data["page"]))
+            return $this->error("分页参数不能为空",[],400,"json");
+        if (!is_numeric($data["page"]))
+            return $this->error("分页参数不能为空",[],400,"json");
+
         $list=\app\common\model\Information::field("id,title,comments,createtime")
+            ->limit(5)
+            ->page($data["page"])
             ->select();
         return $this->success('数据请求成功',$list,200,"json");
     }
@@ -63,21 +71,32 @@ class Information extends Api{
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function getInformationDetail($id)
+    public function getInformationDetail(Request $request)
     {
-        if (!is_numeric($id)){
-            return $this->error("数据请求格式错误",[],400,"json");
+        $data=$request->post();
+        if (empty($data["page"]))
+            return $this->error("分页参数不能为空",[],400,"json");
+        if (empty($data["id"]))
+            return $this->error("动态id不能为空",[],400,"json");
+        if (!is_numeric($data["id"])){
+            return $this->error("动态id错误",[],400,"json");
         }
-        //获取资讯列表
-        $list=\app\common\model\information\Information::where("id",'=',$id)
+        if (!is_numeric($data["page"])){
+            return $this->error("分页参数错误",[],400,"json");
+        }
+
+        //获取资讯
+        $list=\app\common\model\information\Information::where("id",'=',$data["id"])
             ->field("title,content,images,author,browses,likes")
             ->find();
         //获取当前资讯的评论
         $comment_list=Comment::where("type",1)
-            ->where("parent_id",$id)
+            ->where("parent_id",$data["id"])
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic","ln_comment"=>"comment"])
             ->join("ln_user","comment.user_id=user.id")
             ->field("comment.id,user_id,content,comments,likes,type,parent_id,reply_id,comment.createtime,nickname,avatar")
+            ->limit(10)
+            ->page($data["page"])
             ->select();
         $count=Comment::getReplyCount($comment_list);
         return $this->success('数据请求成功',["article"=>$list,"comments"=>$count],200,"json");
@@ -97,18 +116,22 @@ class Information extends Api{
         $parent_id=$list["id"];//资讯id
         $user_id=$list["user_id"];//评论的用户的id
         $content=$list["content"];
-        $reply_id=$list["reply_id"];//回复的评论的id
-        if (empty($list) || empty($parent_id) || empty($user_id) || empty($content)){//检查id是否为空
-            return $this->error("数据请求格式错误",[],400,"json");
+        $reply_id=$list["reply_id"];//被回复用户的id
+        if (empty($list)) return $this->error("数据请求不能为空",[],400,"json");
+        if (empty($parent_id)) return $this->error("资讯id不能为空",[],400,"json");
+        if (empty($user_id)) return $this->error("用户id不能为空",[],400,"json");
+        if (empty($content)) return $this->error("评论不能为空",[],400,"json");
+        if (empty($list["type"])) return $this->error("评论类型不能为空",[],400,"json");
+        if ($list["type"]==2){
+            return $this->error("评论类型错误",[],400,"json");
         }
-
         $data=[
             "parent_id"=>$parent_id,
             "user_id"=>$user_id,
             "content"=>$content,
             "comments"=>0,
             "likes"=>0,
-            "type"=>1,
+            "type"=>$list["type"],
             "reply_id"=>$reply_id,
         ];
         Db::startTrans();

@@ -8,12 +8,13 @@ use think\Exception;
 use think\Model;
 
 
+/**举报Model模型
+ * class Tip
+ */
 class Tip extends Model
 {
 
-    
 
-    
 
     // 表名
     protected $name = 'tip';

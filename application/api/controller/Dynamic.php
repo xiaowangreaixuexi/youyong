@@ -55,18 +55,23 @@ class Dynamic extends Api{
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function getDynamicList()
+    public function getDynamicList(Request $request)
     {
-        $list=$list=\app\common\model\dynamic\Dynamic::where("hiddswitch",0)
+        $list=$request->post();
+        if (empty($list["page"]))
+            return $this->error("分页参数不能为空",[],400,"json");
+        if (!is_numeric($list["page"]))
+            return $this->error("分页参数错误",[],400,"json");
+
+        $data=\app\common\model\dynamic\Dynamic::where("hiddswitch",0)
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic"])
             ->join("ln_user","dynamic.user_id=user.id")
             ->field("dynamic.id,user_id,content,images,comments,likes,showswitch,dynamic.createtime,nickname,avatar")
+            ->limit(5)
+            ->page($list["page"])
             ->select();
-        if ($list){
-            return $this->success("请求成功",$list,200,"json");
-        }else{
-            return $this->error("数据请求失败",[],400,"json");
-        }
+        return $this->success("请求成功",$data,200,"json");
+
     }
 
     /**获取动态详情
@@ -77,12 +82,22 @@ class Dynamic extends Api{
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function getDynamicDetail($id)
+    public function getDynamicDetail(Request $request)
     {
-        if (!is_numeric($id)){
-            return $this->error("数据请求格式错误",[],400,"json");
+
+        $data=$request->post();
+        if (empty($data["page"]))
+            return $this->error("分页参数不能为空",[],400,"json");
+        if (empty($data["id"]))
+            return $this->error("动态id不能为空",[],400,"json");
+        if (!is_numeric($data["id"])){
+            return $this->error("动态id错误",[],400,"json");
         }
-        //获取动态列表
+        if (!is_numeric($data["page"])){
+            return $this->error("分页参数错误",[],400,"json");
+        }
+
+        //获取动态
         $list=$list=\app\common\model\dynamic\Dynamic::where("showswitch",1)
             ->where("hiddswitch",0)
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic"])
@@ -91,26 +106,16 @@ class Dynamic extends Api{
             ->select();
         //获取当前动态的评论
         $comment_list=Comment::where("type",2)
-            ->where("parent_id",$id)
+            ->where("parent_id",$data["id"])
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic","ln_comment"=>"comment"])
             ->join("ln_user","comment.user_id=user.id")
             ->field("comment.id,user_id,content,comments,likes,type,parent_id,reply_id,comment.createtime,nickname,avatar")
-            ->select()->toArray();
+            ->limit(10)
+            ->page($data["page"])
+            ->select()
+            ->toArray();
 
         $count=Comment::getReplyCount($comment_list);
-        //取出每条回复信息
-//        foreach ($count as $item){
-//            foreach ($item as $value){
-//                dump( $value);
-//            }
-//            $id=array_key_last($item);
-//            if ($id!=0){
-//                $reply_list=Comment::where("parent_id",$id)
-//                    ->field("id,user_id,content,likes,createtime,type,parent_id,reply_id")
-//                    ->select()->toArray();
-//                dump($reply_list);
-//            }
-//        }
 
         return $this->success('数据请求成功',["dynamic"=>$list,"comments"=>$count],200,"json");
 
@@ -152,9 +157,11 @@ class Dynamic extends Api{
         $user_id=$list["user_id"];//评论的用户的id
         $content=$list["content"];//评论的内容
         $reply_id=$list["reply_id"];//回复的评论的id
-        if (empty($list) || empty($parent_id) || empty($user_id) || empty($content)){//检查id是否为空
-            return $this->error("数据请求格式错误",[],400,"json");
-        }
+        if (empty($list)) return $this->error("数据请求不能为空",[],400,"json");
+        if (empty($parent_id)) return $this->error("资讯id不能为空",[],400,"json");
+        if (empty($user_id)) return $this->error("用户id不能为空",[],400,"json");
+        if (empty($content)) return $this->error("评论不能为空",[],400,"json");
+        if (empty($list["type"])) return $this->error("评论类型不能为空",[],400,"json");
         if ($list["type"]==1){
             return $this->error("评论类型错误",[],400,"json");
         }
