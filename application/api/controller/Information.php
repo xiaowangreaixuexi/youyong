@@ -9,6 +9,9 @@ use think\Exception;
 use think\Request;
 use think\response\Json;
 
+/**资讯api接口
+ *class Information
+ */
 class Information extends Api{
 
     /**
@@ -76,7 +79,8 @@ class Information extends Api{
             ->join("ln_user","comment.user_id=user.id")
             ->field("comment.id,user_id,content,comments,likes,type,parent_id,reply_id,comment.createtime,nickname,avatar")
             ->select();
-        return $this->success('数据请求成功',["article"=>$list,"comments"=>$comment_list],200,"json");
+        $count=Comment::getReplyCount($comment_list);
+        return $this->success('数据请求成功',["article"=>$list,"comments"=>$count],200,"json");
 
 
     }

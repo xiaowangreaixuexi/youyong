@@ -4,6 +4,9 @@ namespace app\api\controller;
 use app\admin\command\Api;
 use think\Request;
 
+/**暂时没用到的接口
+ *
+ */
 class Reply extends Api{
 
     /**

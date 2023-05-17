@@ -10,6 +10,9 @@ use think\Db;
 use think\Exception;
 use think\Request;
 
+/** 动态api接口
+ * class Dynamic
+ */
 class Dynamic extends Api{
 
     /**
@@ -32,11 +35,11 @@ class Dynamic extends Api{
      */
     public function getShow()
     {
-        $list=\app\common\model\dynamic\Dynamic::where("showswitch",1)//is_show: 0不是首页展示,1为首页展示
+        $list=\app\common\model\dynamic\Dynamic::where("showswitch",1)//showswitch: 0不是首页展示,1为首页展示
             ->where("hiddswitch",0)
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic"])
             ->join("ln_user","dynamic.user_id=user.id")
-            ->field("dynamic.id,user_id,content,images,comments,likes,is_show,dynamic.createtime,nickname,avatar")
+            ->field("dynamic.id,user_id,content,images,comments,likes,showswitch,dynamic.createtime,nickname,avatar")
             ->select();
         if ($list){
             return $this->success("请求成功",$list,200,"json");
@@ -57,7 +60,7 @@ class Dynamic extends Api{
         $list=$list=\app\common\model\dynamic\Dynamic::where("hiddswitch",0)
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic"])
             ->join("ln_user","dynamic.user_id=user.id")
-            ->field("dynamic.id,user_id,content,images,comments,likes,is_show,dynamic.createtime,nickname,avatar")
+            ->field("dynamic.id,user_id,content,images,comments,likes,showswitch,dynamic.createtime,nickname,avatar")
             ->select();
         if ($list){
             return $this->success("请求成功",$list,200,"json");
@@ -84,7 +87,7 @@ class Dynamic extends Api{
             ->where("hiddswitch",0)
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic"])
             ->join("ln_user","dynamic.user_id=user.id")
-            ->field("dynamic.id,user_id,content,images,comments,likes,is_show,dynamic.createtime,nickname,avatar")
+            ->field("dynamic.id,user_id,content,images,comments,likes,showswitch,dynamic.createtime,nickname,avatar")
             ->select();
         //获取当前动态的评论
         $comment_list=Comment::where("type",2)
@@ -92,12 +95,25 @@ class Dynamic extends Api{
             ->alias(["ln_user"=>"user","ln_dynamic"=>"dynamic","ln_comment"=>"comment"])
             ->join("ln_user","comment.user_id=user.id")
             ->field("comment.id,user_id,content,comments,likes,type,parent_id,reply_id,comment.createtime,nickname,avatar")
-            ->select();
-        if (!empty($list)){
-            return $this->success('数据请求成功',["dynamic"=>$list,"comments"=>$comment_list],200,"json");
-        }else{
-            return $this->error('数据请求失败',[],400,"json");
-        }
+            ->select()->toArray();
+
+        $count=Comment::getReplyCount($comment_list);
+        //取出每条回复信息
+//        foreach ($count as $item){
+//            foreach ($item as $value){
+//                dump( $value);
+//            }
+//            $id=array_key_last($item);
+//            if ($id!=0){
+//                $reply_list=Comment::where("parent_id",$id)
+//                    ->field("id,user_id,content,likes,createtime,type,parent_id,reply_id")
+//                    ->select()->toArray();
+//                dump($reply_list);
+//            }
+//        }
+
+        return $this->success('数据请求成功',["dynamic"=>$list,"comments"=>$count],200,"json");
+
     }
 
     /**发布新动态
@@ -139,14 +155,16 @@ class Dynamic extends Api{
         if (empty($list) || empty($parent_id) || empty($user_id) || empty($content)){//检查id是否为空
             return $this->error("数据请求格式错误",[],400,"json");
         }
-
+        if ($list["type"]==1){
+            return $this->error("评论类型错误",[],400,"json");
+        }
         $data=[
             "parent_id"=>$parent_id,
             "user_id"=>$user_id,
             "content"=>$content,
             "comments"=>0,
             "likes"=>0,
-            "type"=>2,
+            "type"=>$list["type"],
             "reply_id"=>$reply_id,
         ];
         Db::startTrans();
