@@ -33,7 +33,12 @@ class Comment extends Api{
      */
     public function getReply(Request $request)
     {
+
         $list=$request->post();
+        if (empty($list["token"])) return $this->error("请登录后点赞",[],400,"json");
+        $info=\app\common\library\Token::get($list["token"]);
+        $token_bool=\app\common\library\Token::check($list["token"],$info["user_id"]);
+        if (!$token_bool) return $this->error("token验证错误",[],400,"json");
         if (!is_numeric($list["id"]))
             return $this->error("评论id错误",[],400,"json");
         if (!is_numeric($list["type"]) || $list["type"]!=3)

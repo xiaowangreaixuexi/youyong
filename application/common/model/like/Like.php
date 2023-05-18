@@ -50,24 +50,41 @@ class Like extends Model
                 $count=$like::where('user_id',"=",$user_id)
                     ->where("parent_id",'=',$parent_id)
                     ->where("like_type",'=',$like_type)
-                    ->count();
-                if ($count){
-                    return $this->error("请勿重复点赞",[],204,"json");
-                }else{
+                    ->find();
+                if (!$count){
                     Information::where("id","=",$parent_id)
                         ->setInc('likes');
+                    $data=[
+                        "user_id"=>$user_id,
+                        "parent_id"=>$parent_id,
+                        "like_type"=>$like_type,
+                        "like_times"=>0,
+                    ];
+                    $times=$like::create($data);
+                }else{
+                    $like::where('user_id',"=",$user_id)
+                        ->where("parent_id",'=',$parent_id)
+                        ->where("like_type",'=',$like_type)
+                        ->setInc("like_times");
+                    $times=$like::where('user_id',"=",$user_id)
+                        ->where("parent_id",'=',$parent_id)
+                        ->where("like_type",'=',$like_type)
+                        ->find()
+                        ->toArray();
+                    if ($times["like_times"]%2>0){
+                        Information::where("id","=",$parent_id)
+                            ->setDec('likes');
+                    }else{
+                        Information::where("id","=",$parent_id)
+                            ->setInc('likes');
+                    }
+
                 }
-                $data=[
-                    "user_id"=>$user_id,
-                    "parent_id"=>$parent_id,
-                    "like_type"=>$like_type,
-                ];
-                $like::create($data);
                 Db::commit();
-                return true;
+                return $times;
             }catch (Exception $e){
                 Db::rollback();
-                return false;
+                return -1;
             }
 
         }else if ($like_type==2){
@@ -76,25 +93,41 @@ class Like extends Model
                 $count=$like::where('user_id',"=",$user_id)
                     ->where("parent_id",'=',$parent_id)
                     ->where("like_type",'=',$like_type)
-                    ->count();
-                if ($count){
-                    return $this->error("请勿重复点赞",[],204,"json");
-                }else{
+                    ->find();
+                if (!$count){
                     Dynamic::where("id","=",$parent_id)
                         ->setInc('likes');
-                }
+                    $data=[
+                        "user_id"=>$user_id,
+                        "parent_id"=>$parent_id,
+                        "like_type"=>$like_type,
+                        "like_times"=>0,
+                    ];
+                    $times=$like::create($data);
+                }else{
+                    $like::where('user_id',"=",$user_id)
+                        ->where("parent_id",'=',$parent_id)
+                        ->where("like_type",'=',$like_type)
+                        ->setInc("like_times");
+                    $times=$like::where('user_id',"=",$user_id)
+                        ->where("parent_id",'=',$parent_id)
+                        ->where("like_type",'=',$like_type)
+                        ->find()
+                        ->toArray();
+                    if ($times["like_times"]%2>0){
+                        Dynamic::where("id","=",$parent_id)
+                            ->setDec('likes');
+                    }else{
+                        Dynamic::where("id","=",$parent_id)
+                            ->setInc('likes');
+                    }
 
-                $data=[
-                    "user_id"=>$user_id,
-                    "parent_id"=>$parent_id,
-                    "like_type"=>$like_type,
-                ];
-                $like::create($data);
+                }
                 Db::commit();
-                return true;
+                return $times;
             }catch (Exception $e){
                 Db::rollback();
-                return false;
+                return -1;
             }
         }else if ($like_type==3){
             Db::startTrans();
@@ -102,27 +135,44 @@ class Like extends Model
                 $count=$like::where('user_id',"=",$user_id)
                     ->where("parent_id",'=',$parent_id)
                     ->where("like_type",'=',$like_type)
-                    ->count();
-                if ($count){
-                    return $this->error("请勿重复点赞",[],204,"json");
-                }else{
+                    ->find();
+                if (!$count){
                     Comment::where("id","=",$parent_id)
                         ->setInc('likes');
+                    $data=[
+                        "user_id"=>$user_id,
+                        "parent_id"=>$parent_id,
+                        "like_type"=>$like_type,
+                        "like_times"=>0,
+                    ];
+                    $times=$like::create($data);
+                }else{
+                    $like::where('user_id',"=",$user_id)
+                        ->where("parent_id",'=',$parent_id)
+                        ->where("like_type",'=',$like_type)
+                        ->setInc("like_times");
+                    $times=$like::where('user_id',"=",$user_id)
+                        ->where("parent_id",'=',$parent_id)
+                        ->where("like_type",'=',$like_type)
+                        ->find()
+                        ->toArray();
+                    if ($times["like_times"]%2>0){
+                        Comment::where("id","=",$parent_id)
+                            ->setDec('likes');
+                    }else{
+                        Comment::where("id","=",$parent_id)
+                            ->setInc('likes');
+                    }
+
                 }
-                $data=[
-                    "user_id"=>$user_id,
-                    "parent_id"=>$parent_id,
-                    "like_type"=>$like_type,
-                ];
-                $like::create($data);
                 Db::commit();
-                return true;
+                return $times;
             }catch (Exception $e){
                 Db::rollback();
-                return false;
+                return -1;
             }
         }else{
-            return false;
+            return -1;
         }
 
     }

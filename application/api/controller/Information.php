@@ -27,6 +27,7 @@ class Information extends Api{
     protected $noNeedRight = ['*'];
 
 
+
     /**获取首页资讯
      * @return Json
      * @throws \think\db\exception\DataNotFoundException
@@ -113,6 +114,10 @@ class Information extends Api{
     {
 
         $list=$request->post();
+        if (empty($list["token"])) return $this->error("请登录后点赞",[],400,"json");
+        $info=\app\common\library\Token::get($list["token"]);
+        $token_bool=\app\common\library\Token::check($list["token"],$info["user_id"]);
+        if (!$token_bool) return $this->error("token验证错误",[],400,"json");
         $parent_id=$list["id"];//资讯id
         $user_id=$list["user_id"];//评论的用户的id
         $content=$list["content"];
@@ -159,7 +164,12 @@ class Information extends Api{
      */
     public function incLikes(Request $request)
     {
+
         $list=$request->post();
+        if (empty($list["token"])) return $this->error("请登录后点赞",[],400,"json");
+        $info=\app\common\library\Token::get($list["token"]);
+        $token_bool=\app\common\library\Token::check($list["token"],$info["user_id"]);
+        if (!$token_bool) return $this->error("token验证错误",[],400,"json");
         $parent_id=$list["id"];//点赞目标的id
         $user_id=$list["user_id"];//点赞的用户id
         $like_type=$list["like_type"];//点赞类型
@@ -167,8 +177,13 @@ class Information extends Api{
             return $this->error("数据参数缺失",[],400,"json");
         }
         $likes=Like::incLikes($user_id,$parent_id,$like_type);
-        if ($likes){
-            return $this->success("点赞成功",200,"json");
+        if ($likes==-1){
+            return $this->error("点赞失败",[],400,"json");
+        }
+        if(($likes["like_times"])%2==0){
+            return $this->success("点赞成功",[],200,"json");
+        }else {
+            return $this->success("取消点赞成功",[],200,"json");
         }
 
     }
